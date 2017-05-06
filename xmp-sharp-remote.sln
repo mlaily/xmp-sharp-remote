@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmp-sharp-remote-native", "native-plugin\xmp-sharp-remote-native.vcxproj", "{3D7B84EE-9CCB-4216-B0AD-BF60D03A7AC9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{10238D4E-B185-4CC6-8FB5-D0BC7A19D848} = {10238D4E-B185-4CC6-8FB5-D0BC7A19D848}
+		{B9BD977A-5527-4BD5-A84C-23E05C8A38B2} = {B9BD977A-5527-4BD5-A84C-23E05C8A38B2}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xmp-sharp-remote-managed", "managed-plugin\xmp-sharp-remote-managed.csproj", "{10238D4E-B185-4CC6-8FB5-D0BC7A19D848}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmp-sharp-remote-wrapper", "xmp-sharp-remote-wrapper\xmp-sharp-remote-wrapper.vcxproj", "{B9BD977A-5527-4BD5-A84C-23E05C8A38B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{3C2357E2-0321-4193-A9EC-93B7E369EC55}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Managed Plugin Implementation", "Managed Plugin Implementation", "{4973CDEC-675E-42D4-9375-DF195743E720}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Native C++ Plugin", "Native C++ Plugin", "{77B35884-4306-4F8D-B6A2-E1A6D8B7B0F4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mixed Native-Managed Assembly Bridge", "Mixed Native-Managed Assembly Bridge", "{BB8C5706-994C-47ED-A029-0787810F2308}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{C04C8F9B-83B4-44E9-85DE-B57818D6F7C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1ACE1DB3-33C0-4D7A-BE84-806BEB137837}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3D7B84EE-9CCB-4216-B0AD-BF60D03A7AC9}.Debug|x86.ActiveCfg = Debug|Win32
+		{3D7B84EE-9CCB-4216-B0AD-BF60D03A7AC9}.Debug|x86.Build.0 = Debug|Win32
+		{3D7B84EE-9CCB-4216-B0AD-BF60D03A7AC9}.Release|x86.ActiveCfg = Release|Win32
+		{3D7B84EE-9CCB-4216-B0AD-BF60D03A7AC9}.Release|x86.Build.0 = Release|Win32
+		{10238D4E-B185-4CC6-8FB5-D0BC7A19D848}.Debug|x86.ActiveCfg = Debug|x86
+		{10238D4E-B185-4CC6-8FB5-D0BC7A19D848}.Debug|x86.Build.0 = Debug|x86
+		{10238D4E-B185-4CC6-8FB5-D0BC7A19D848}.Release|x86.ActiveCfg = Release|x86
+		{10238D4E-B185-4CC6-8FB5-D0BC7A19D848}.Release|x86.Build.0 = Release|x86
+		{B9BD977A-5527-4BD5-A84C-23E05C8A38B2}.Debug|x86.ActiveCfg = Debug|Win32
+		{B9BD977A-5527-4BD5-A84C-23E05C8A38B2}.Debug|x86.Build.0 = Debug|Win32
+		{B9BD977A-5527-4BD5-A84C-23E05C8A38B2}.Release|x86.ActiveCfg = Release|Win32
+		{B9BD977A-5527-4BD5-A84C-23E05C8A38B2}.Release|x86.Build.0 = Release|Win32
+		{3C2357E2-0321-4193-A9EC-93B7E369EC55}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3C2357E2-0321-4193-A9EC-93B7E369EC55}.Debug|x86.Build.0 = Debug|Any CPU
+		{3C2357E2-0321-4193-A9EC-93B7E369EC55}.Release|x86.ActiveCfg = Release|Any CPU
+		{3C2357E2-0321-4193-A9EC-93B7E369EC55}.Release|x86.Build.0 = Release|Any CPU
+		{1ACE1DB3-33C0-4D7A-BE84-806BEB137837}.Debug|x86.ActiveCfg = Debug|x86
+		{1ACE1DB3-33C0-4D7A-BE84-806BEB137837}.Debug|x86.Build.0 = Debug|x86
+		{1ACE1DB3-33C0-4D7A-BE84-806BEB137837}.Release|x86.ActiveCfg = Release|x86
+		{1ACE1DB3-33C0-4D7A-BE84-806BEB137837}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3D7B84EE-9CCB-4216-B0AD-BF60D03A7AC9} = {77B35884-4306-4F8D-B6A2-E1A6D8B7B0F4}
+		{10238D4E-B185-4CC6-8FB5-D0BC7A19D848} = {4973CDEC-675E-42D4-9375-DF195743E720}
+		{B9BD977A-5527-4BD5-A84C-23E05C8A38B2} = {BB8C5706-994C-47ED-A029-0787810F2308}
+		{3C2357E2-0321-4193-A9EC-93B7E369EC55} = {C04C8F9B-83B4-44E9-85DE-B57818D6F7C8}
+		{1ACE1DB3-33C0-4D7A-BE84-806BEB137837} = {C04C8F9B-83B4-44E9-85DE-B57818D6F7C8}
+	EndGlobalSection
+EndGlobal
