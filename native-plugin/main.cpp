@@ -38,13 +38,14 @@
 #define AUTO_NULL_TERMINATED_LENGTH     -1
 
 static HINSTANCE hDll;
+static HWND xmplayWinHandle = NULL;
 
 static XMPFUNC_MISC* xmpfmisc;
 static XMPFUNC_STATUS* xmpfstatus;
 
-static ScrobblerConfig scrobblerConf;
+static ScrobblerConfig pluginConfig;
 
-static SharpScrobblerWrapper* scrobbler = NULL;
+static SharpScrobblerWrapper* pluginWrapper = NULL;
 
 static const char* currentFilePath = NULL;
 
@@ -68,10 +69,7 @@ static double lastMeasuredTrackPosition = NAN;
 static int currentTrackDurationMs = 0;
 // When set to true, the current track will be scrobbled as soon as it ends.
 // Used to debounce the calls to OnTrackCompletes()
-static bool scrobbleCurrentTrackInfoOnEnd = false;
-// When set to true, a log will be added when a new track starts playing
-// to indicate the current track was not played long enough to be scrobbled.
-static bool logCurrentTrackWontScrobbleOnNextTrack = false;
+static bool callOnTrackCompletesOnEnd = false;
 
 static XMPDSP dsp =
 {
@@ -89,6 +87,41 @@ static XMPDSP dsp =
     DSP_Reset,
     DSP_Process,
     DSP_NewTitle
+};
+
+static LPCWSTR WINAPI GetPlaylist()
+{
+    int playlistTrackCount = SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
+    for (int i = 0; i < playlistTrackCount; i++)
+    {
+        char* file = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTFILE);
+        char* title = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTTITLE);
+    }
+    return GetStringW("hohohoé.♥ :)");
+}
+
+static void WINAPI GetPlaylist2(PLAYLIST_ITEM** items, int* size)
+{
+    *size = SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
+    *items = new PLAYLIST_ITEM[*size];
+    for (int i = 0; i < *size; i++)
+    {
+        char* file = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTFILE);
+        char* title = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTTITLE);
+
+        PLAYLIST_ITEM item = PLAYLIST_ITEM();
+        item.filePath = GetStringW(file);
+        item.title = GetStringW(title);
+
+        (*items)[i] = item;
+    }
+}
+
+static PLUGIN_EXPORTS exports =
+{
+    ShowInfoBubble,
+    GetPlaylist,
+    GetPlaylist2
 };
 
 static void WINAPI ShowInfoBubble(const char* text, int displayTimeMs)
@@ -143,43 +176,47 @@ static const char* WINAPI DSP_GetDescription(void* inst)
 
 static void* WINAPI DSP_New()
 {
-    scrobbler = new SharpScrobblerWrapper();
-    SharpScrobblerWrapper::InitializeShowBubbleInfo(ShowInfoBubble);
+    pluginWrapper = new SharpScrobblerWrapper();
+    SharpScrobblerWrapper::InitializeExports(&exports);
     SharpScrobblerWrapper::LogInfo("****************************************************************************************************");
     SharpScrobblerWrapper::LogInfo(PLUGIN_FRIENDLY_NAME " " PLUGIN_VERSION_STRING " started!");
+
+    if (!xmplayWinHandle)
+        xmplayWinHandle = xmpfmisc->GetWindow();
+
     return (void*)1;
 }
 
 static void WINAPI DSP_Free(void* inst)
 {
     ReleaseTrackInfo(currentTrackInfo);
-    delete scrobbler;
+    delete pluginWrapper;
 }
 
 // Called after a click on the plugin Config button.
 static void WINAPI DSP_Config(void* inst, HWND win)
 {
-    //const char* sessionKey = scrobbler->AskUserForNewAuthorizedSessionKey(win);
+    //const char* sessionKey = pluginWrapper->AskUserForNewAuthorizedSessionKey(win);
     //if (sessionKey != NULL)
     //{
     //    // If the new session key is valid, save it.
-    //    memcpy(scrobblerConf.sessionKey, sessionKey, sizeof(scrobblerConf.sessionKey));
-    //    scrobbler->SetSessionKey(scrobblerConf.sessionKey);
+    //    memcpy(pluginConfig.sessionKey, sessionKey, sizeof(pluginConfig.sessionKey));
+    //    pluginWrapper->SetSessionKey(pluginConfig.sessionKey);
     //}
 }
 
 // Get config from the plugin. (return size of config data)
 static DWORD WINAPI DSP_GetConfig(void* inst, void* config)
 {
-    memcpy(config, &scrobblerConf, sizeof(ScrobblerConfig));
+    memcpy(config, &pluginConfig, sizeof(ScrobblerConfig));
     return sizeof(ScrobblerConfig);
 }
 
 // Apply config to the plugin.
 static BOOL WINAPI DSP_SetConfig(void* inst, void* config, DWORD size)
 {
-    memcpy(&scrobblerConf, config, sizeof(ScrobblerConfig));
-    //scrobbler->SetSessionKey(scrobblerConf.sessionKey);
+    memcpy(&pluginConfig, config, sizeof(ScrobblerConfig));
+    //pluginWrapper->SetSessionKey(pluginConfig.sessionKey);
     return TRUE;
 }
 
@@ -269,33 +306,15 @@ static DWORD WINAPI DSP_Process(void* inst, float* data, DWORD count)
                     // ...and the position reset, this is an actual loop!
                     CompleteCurrentTrack();
                     msThresholdForNewTrack = 0; // So that we don't risk detecting the new play a second time based on the processed samples count.
-                    calculatedPlayedMs = 0; // So that we don' risk scrobbling the track. (see below)
                     TrackStartsPlaying();
                 }
             }
         }
     }
 
-    // Check whether the current track can be scrobbled:
-    // The track must be longer than 30 seconds.
-    // And the track must have been played for at least half its duration, or for 4 minutes(whichever occurs earlier.)
-    if (scrobbleCurrentTrackInfoOnEnd == false
-        && currentTrackDurationMs > TRACK_DURATION_THRESHOLD_MS
-        && (calculatedPlayedMs > (currentTrackDurationMs / 2) || calculatedPlayedMs >= TRACK_PLAY_TIME_THRESHOLD_MS))
+    if (callOnTrackCompletesOnEnd == false)
     {
-        // Do we have enough information to scrobble?
-        if (CanScrobble(currentTrackInfo))
-        {
-         /*   scrobbler->OnTrackCanScrobble(
-                currentTrackInfo->artist,
-                currentTrackInfo->title,
-                currentTrackInfo->album,
-                currentTrackDurationMs,
-                currentTrackInfo->trackNumber,
-                NULL,
-                currentTrackInfo->playStartTimestamp);*/
-        }
-        scrobbleCurrentTrackInfoOnEnd = true;
+        callOnTrackCompletesOnEnd = true;
     }
 
     // Keep track of the time the track has played.
@@ -305,20 +324,15 @@ static DWORD WINAPI DSP_Process(void* inst, float* data, DWORD count)
 }
 
 // Complete playing the current track.
-// Scrobble it if needed then reset everything for a new track.
+// Reset everything for a new track.
 static void CompleteCurrentTrack()
 {
-    if (scrobbleCurrentTrackInfoOnEnd)
+    if (callOnTrackCompletesOnEnd)
     {
-        scrobbler->OnTrackCompletes();
-        scrobbleCurrentTrackInfoOnEnd = false;
-    }
-    else if (logCurrentTrackWontScrobbleOnNextTrack)
-    {
-        SharpScrobblerWrapper::LogInfo("The previous track did not play long enough to be scrobbled.");
+        pluginWrapper->OnTrackCompletes();
+        callOnTrackCompletesOnEnd = false;
     }
 
-    logCurrentTrackWontScrobbleOnNextTrack = false;
     processedSamplesForCurrentTrack = 0;
     processedSamplesForCurrentTrackSinceLastReset = 0;
     lastMeasuredTrackPosition = NAN;
@@ -333,7 +347,7 @@ static void CompleteCurrentTrack()
 static void TrackStartsPlaying()
 {
     currentTrackDurationMs = expectedEndOfCurrentTrackInMs = GetExpectedEndOfCurrentTrackInMs(0);
-    scrobbleCurrentTrackInfoOnEnd = false;
+    callOnTrackCompletesOnEnd = false;
 
     // (Re)initialize currentTrackInfo:
     ReleaseTrackInfo(currentTrackInfo);
@@ -357,46 +371,17 @@ static void TrackStartsPlaying()
     }
 
     currentTrackInfo = trackInfo;
+    
 
-    logCurrentTrackWontScrobbleOnNextTrack = true;
+    pluginWrapper->OnTrackStartsPlaying(
+        currentTrackInfo->artist,
+        currentTrackInfo->title,
+        currentTrackInfo->album,
+        currentTrackDurationMs,
+        currentTrackInfo->trackNumber,
+        NULL);
 
     wchar_t* wFilePath = GetStringW(currentFilePath);
-
-    // Do we have enough information to scrobble?
-    if (CanScrobble(currentTrackInfo))
-    {
-        scrobbler->OnTrackStartsPlaying(
-            currentTrackInfo->artist,
-            currentTrackInfo->title,
-            currentTrackInfo->album,
-            currentTrackDurationMs,
-            currentTrackInfo->trackNumber,
-            NULL);
-
-        if (currentTrackDurationMs <= TRACK_DURATION_THRESHOLD_MS)
-        {
-            SharpScrobblerWrapper::LogWarning(
-                (std::wstring(L"Track: '") + NullCheck(currentTrackInfo->title)
-                    + L"', artist: '" + NullCheck(currentTrackInfo->artist)
-                    + L"', album: '" + NullCheck(currentTrackInfo->album)
-                    + L"', from file '" + NullCheck(wFilePath)
-                    + L"' is too short (it must be longer than 30 seconds) and will not be scrobbled.").c_str());
-            // We don't want to log the same message twice...
-            logCurrentTrackWontScrobbleOnNextTrack = false;
-        }
-    }
-    else
-    {
-        SharpScrobblerWrapper::LogWarning(
-            (std::wstring(L"Track: '") + NullCheck(currentTrackInfo->title)
-                + L"', artist: '" + NullCheck(currentTrackInfo->artist)
-                + L"', album: '" + NullCheck(currentTrackInfo->album)
-                + L"', from file '" + NullCheck(wFilePath)
-                + L"'is missing mandatory information and will not be scrobbled.").c_str());
-        // We don't want to log the same message twice...
-        logCurrentTrackWontScrobbleOnNextTrack = false;
-    }
-
     delete[] wFilePath;
 }
 
@@ -409,15 +394,6 @@ static int GetExpectedEndOfCurrentTrackInMs(int fromPositionMs)
     xmpfmisc->Free(stringDuration);
     int currentTrackMaxExpectedDurationMs = (int)(parsed * 1000);
     return currentTrackMaxExpectedDurationMs - fromPositionMs;
-}
-
-// Return a value indicating whether the given TrackInfo contains enough information to be scrobbled.
-static bool CanScrobble(TrackInfo* trackInfo)
-{
-    return currentTrackInfo->title != NULL
-        && wcslen(currentTrackInfo->title) > 0
-        && currentTrackInfo->artist != NULL
-        && wcslen(currentTrackInfo->artist) > 0;
 }
 
 // Free an instance of TrackInfo.
@@ -462,7 +438,6 @@ static std::wstring NullCheck(wchar_t* string)
 {
     return string ? std::wstring(string) : std::wstring();
 }
-
 
 // Get the plugin's XMPDSP interface.
 XMPDSP* WINAPI XMPDSP_GetInterface2(DWORD face, InterfaceProc faceproc)

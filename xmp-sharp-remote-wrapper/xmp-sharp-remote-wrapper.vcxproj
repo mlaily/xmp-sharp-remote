@@ -95,6 +95,7 @@ xcopy /RY "$(TargetDir)xmp-sharp-remote-wrapper.lib" "$(SolutionDir)\native-plug
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssemblyInitializer.h" />
+    <ClInclude Include="Definitions.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="SharpScrobblerWrapper.h" />
   </ItemGroup>

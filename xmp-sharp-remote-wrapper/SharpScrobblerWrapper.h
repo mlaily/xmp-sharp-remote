@@ -1,4 +1,6 @@
-﻿class SharpScrobblerAdapter;
+﻿#include "Definitions.h"
+
+class SharpScrobblerAdapter;
 
 class SharpScrobblerWrapper
 {
@@ -9,7 +11,7 @@ public:
     SharpScrobblerWrapper();
     ~SharpScrobblerWrapper();
 
-    static void InitializeShowBubbleInfo(void(WINAPI *showBubbleInfo)(const char* text, int displayTimeMs));
+    static void InitializeExports(PLUGIN_EXPORTS* pluginExports);
 
     static void LogInfo(const char* message);
     static void LogInfo(const wchar_t* message);

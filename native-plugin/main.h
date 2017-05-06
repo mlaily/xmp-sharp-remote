@@ -48,7 +48,6 @@ static void WINAPI DSP_NewTitle(void* inst, const char* title);
 
 static void CompleteCurrentTrack();
 static void TrackStartsPlaying();
-static bool CanScrobble(TrackInfo* trackInfo);
 static void ReleaseTrackInfo(TrackInfo* trackInfo);
 static int GetExpectedEndOfCurrentTrackInMs(int fromPositionMs);
 static wchar_t* GetStringW(const char* string);

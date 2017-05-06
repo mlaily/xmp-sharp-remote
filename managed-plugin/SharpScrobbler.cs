@@ -22,6 +22,7 @@ using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -57,6 +58,14 @@ namespace xmp_sharp_remote_managed
 
         public async void OnTrackStartsPlaying(string artist, string track, string album, int durationMs, string trackNumber, string mbid)
         {
+            Util.ShowInfoBubble("coucou");
+            var playlist = Util._PluginExports.GetPlaylist();
+            PlaylistItem[] item;
+            Util._PluginExports.GetPlaylist2(out item, out int size);
+
+            //   var x = Marshal.PtrToStructure<PlaylistItem>(playlist2);
+
+
             //NowPlaying nowPlaying = CreateScrobble(artist, track, album, durationMs, trackNumber, mbid);
 
             //Logger.Log(LogLevel.Info, $"Now playing: '{track}', artist: '{artist}', album: '{album}'");

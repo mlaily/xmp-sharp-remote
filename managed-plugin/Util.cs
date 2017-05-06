@@ -21,19 +21,42 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace xmp_sharp_remote_managed
 {
     public delegate void ShowInfoBubbleHandler(string text, int displayTimeMs);
+    [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+    public delegate string GetPlaylistHandler();
+
+    [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+    public delegate void GetPlaylist2Handler([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] out PlaylistItem[] items, out int size);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public class PluginExports
+    {
+        public ShowInfoBubbleHandler ShowBubbleInfo;
+        public GetPlaylistHandler GetPlaylist;
+        public GetPlaylist2Handler GetPlaylist2;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct PlaylistItem
+    {
+        public string title;
+        public string filePath;
+    }
 
     public static class Util
     {
-        private static ShowInfoBubbleHandler _ShowInfoBubble;
-        public static void InitializeShowBubbleInfo(ShowInfoBubbleHandler showInfoBubble)
-            => _ShowInfoBubble = showInfoBubble;
+        public static PluginExports _PluginExports;
+        public static void InitializeExports(PluginExports exports)
+        {
+            _PluginExports = exports;
+        }
         public static void ShowInfoBubble(string text, TimeSpan? displayTime = null)
-            => _ShowInfoBubble?.Invoke(text, displayTime == null ? 0 : (int)displayTime.Value.TotalMilliseconds);
+            => _PluginExports.ShowBubbleInfo?.Invoke(text, displayTime == null ? 0 : (int)displayTime.Value.TotalMilliseconds);
     }
 }

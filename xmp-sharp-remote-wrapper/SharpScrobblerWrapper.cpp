@@ -1,5 +1,6 @@
 ﻿#include "Stdafx.h"
 #include <windows.h>
+#include "Definitions.h"
 #include <msclr\auto_gcroot.h>
 
 #using "xmp-sharp-remote-managed.dll"
@@ -11,13 +12,6 @@ using namespace xmp_sharp_remote_managed;
 
 // Create a managed proxy function for a native function pointer
 // to allow the C# part to call a native function:
-
-static void(WINAPI *_NativeShowInfoBubble)(const char* text, int displayTimeMs);
-static void _ShowInfoBubble(String^ text, int displayTimeMs)
-{
-    const char* nativeText = (const char*)Marshal::StringToHGlobalAnsi(text).ToPointer();
-    _NativeShowInfoBubble(nativeText, displayTimeMs);
-};
 
 class SharpScrobblerAdapter
 {
@@ -41,10 +35,16 @@ public:
         delete _adapter;
     }
 
-    static void InitializeShowBubbleInfo(void(WINAPI *showBubbleInfo)(const char* text, int displayTimeMs))
+    static void InitializeExports(PLUGIN_EXPORTS* pluginExports)
     {
-        _NativeShowInfoBubble = showBubbleInfo;
-        Util::InitializeShowBubbleInfo(gcnew ShowInfoBubbleHandler(_ShowInfoBubble));
+        xmp_sharp_remote_managed::PluginExports^ managedExports = gcnew xmp_sharp_remote_managed::PluginExports();
+        managedExports->ShowBubbleInfo =
+            Marshal::GetDelegateForFunctionPointer<ShowInfoBubbleHandler^>((IntPtr)pluginExports->ShowBubbleInfo);
+        managedExports->GetPlaylist =
+            Marshal::GetDelegateForFunctionPointer<GetPlaylistHandler^>((IntPtr)pluginExports->GetPlaylist);
+        managedExports->GetPlaylist2 =
+            Marshal::GetDelegateForFunctionPointer<GetPlaylist2Handler^>((IntPtr)pluginExports->GetPlaylist2);
+        Util::InitializeExports(managedExports);
     }
 
     static void LogInfo(const char* message)
