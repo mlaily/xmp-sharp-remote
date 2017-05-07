@@ -42,8 +42,25 @@ public:
             Marshal::GetDelegateForFunctionPointer<ShowInfoBubbleHandler^>((IntPtr)pluginExports->ShowBubbleInfo);
         managedExports->GetPlaylist =
             Marshal::GetDelegateForFunctionPointer<GetPlaylistHandler^>((IntPtr)pluginExports->GetPlaylist);
-        managedExports->GetPlaylist2 =
-            Marshal::GetDelegateForFunctionPointer<GetPlaylist2Handler^>((IntPtr)pluginExports->GetPlaylist2);
+        managedExports->GetPlaybackStatus =
+            Marshal::GetDelegateForFunctionPointer<GetPlaybackStatusHandler^>((IntPtr)pluginExports->GetPlaybackStatus);
+        managedExports->GetCurrentTrackInfo =
+            Marshal::GetDelegateForFunctionPointer<GetCurrentTrackInfoHandler^>((IntPtr)pluginExports->GetCurrentTrackInfo);
+        managedExports->TogglePlayPause =
+            Marshal::GetDelegateForFunctionPointer<TogglePlayPauseHandler^>((IntPtr)pluginExports->TogglePlayPause);
+        managedExports->GetVolume =
+            Marshal::GetDelegateForFunctionPointer<GetVolumeHandler^>((IntPtr)pluginExports->GetVolume);
+        managedExports->SetVolume =
+            Marshal::GetDelegateForFunctionPointer<SetVolumeHandler^>((IntPtr)pluginExports->SetVolume);
+        managedExports->GetCurrentPlaylistPosition =
+            Marshal::GetDelegateForFunctionPointer<GetCurrentPlaylistPositionHandler^>((IntPtr)pluginExports->GetCurrentPlaylistPosition);
+        managedExports->SetCurrentPlaylisPosition =
+            Marshal::GetDelegateForFunctionPointer<SetCurrentPlaylisPositionHandler^>((IntPtr)pluginExports->SetCurrentPlaylisPosition);
+        managedExports->GetPlaybackTime =
+            Marshal::GetDelegateForFunctionPointer<GetPlaybackTimeHandler^>((IntPtr)pluginExports->GetPlaybackTime);
+        managedExports->SetPlaybackTime =
+            Marshal::GetDelegateForFunctionPointer<SetPlaybackTimeHandler^>((IntPtr)pluginExports->SetPlaybackTime);
+
         Util::InitializeExports(managedExports);
     }
 

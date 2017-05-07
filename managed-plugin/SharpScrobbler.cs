@@ -58,13 +58,28 @@ namespace xmp_sharp_remote_managed
 
         public async void OnTrackStartsPlaying(string artist, string track, string album, int durationMs, string trackNumber, string mbid)
         {
-            Util.ShowInfoBubble("coucou");
-            var playlist = Util._PluginExports.GetPlaylist();
-            PlaylistItem[] item;
-            Util._PluginExports.GetPlaylist2(out item, out int size);
+           //   await Task.Delay(1000);
+            //  Util._PluginExports.TogglePlayPause();
 
-            //   var x = Marshal.PtrToStructure<PlaylistItem>(playlist2);
+              var status = Util._PluginExports.GetPlaybackStatus();
+              Util.ShowInfoBubble($"{status}♥");
+            ////  var playlist = Util._PluginExports.GetPlaylist();
+            //  PlaylistItem[] item;
+            //  Util._PluginExports.GetPlaylist(out item, out int size);
 
+            //  Util._PluginExports.GetCurrentTrackInfo(out var currentTrackInfo);
+
+            //  var volume = Util._PluginExports.GetVolume();
+
+            //  Util._PluginExports.SetVolume(volume + 0.5);
+
+            ////   var x = Marshal.PtrToStructure<PlaylistItem>(playlist2);
+
+            //int playlistIndex = Util._PluginExports.GetCurrentPlaylistPosition();
+            // Util._PluginExports.SetCurrentPlaylisPosition(++playlistIndex);
+
+            Util._PluginExports.SetPlaybackTime(10000);
+           // Util._PluginExports.GetPlaybackTime(out int current, out int total);
 
             //NowPlaying nowPlaying = CreateScrobble(artist, track, album, durationMs, trackNumber, mbid);
 

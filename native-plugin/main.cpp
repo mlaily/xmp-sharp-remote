@@ -29,10 +29,6 @@
 #include "SharpScrobblerWrapper.h"
 #include "main.h"
 
-// > 30 seconds ?
-#define TRACK_DURATION_THRESHOLD_MS     30 * 1000
-// Half the track, or 4 minutes, whichever comes first.
-#define TRACK_PLAY_TIME_THRESHOLD_MS    4 * 60 * 1000
 // Magic number for MultiByteToWideChar()
 // to auto detect the length of a null terminated source string
 #define AUTO_NULL_TERMINATED_LENGTH     -1
@@ -49,7 +45,7 @@ static SharpScrobblerWrapper* pluginWrapper = NULL;
 
 static const char* currentFilePath = NULL;
 
-static TrackInfo* currentTrackInfo = NULL;
+static TRACK_INFO* currentTrackInfo = NULL;
 
 // Sample rate of the current track, by 1000.
 static DWORD xmprateBy1000 = 0;
@@ -89,45 +85,20 @@ static XMPDSP dsp =
     DSP_NewTitle
 };
 
-static LPCWSTR WINAPI GetPlaylist()
-{
-    int playlistTrackCount = SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
-    for (int i = 0; i < playlistTrackCount; i++)
-    {
-        char* file = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTFILE);
-        char* title = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTTITLE);
-    }
-    return GetStringW("hohohoé.♥ :)");
-}
-
-static void WINAPI GetPlaylist2(PLAYLIST_ITEM** items, int* size)
-{
-    *size = SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
-    *items = new PLAYLIST_ITEM[*size];
-    for (int i = 0; i < *size; i++)
-    {
-        char* file = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTFILE);
-        char* title = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTTITLE);
-
-        PLAYLIST_ITEM item = PLAYLIST_ITEM();
-        item.filePath = GetStringW(file);
-        item.title = GetStringW(title);
-
-        (*items)[i] = item;
-    }
-}
-
 static PLUGIN_EXPORTS exports =
 {
     ShowInfoBubble,
     GetPlaylist,
-    GetPlaylist2
+    GetPlaybackStatus,
+    GetCurrentTrackInfo,
+    TogglePlayPause,
+    GetVolume,
+    SetVolume,
+    GetCurrentPlaylistPosition,
+    SetCurrentPlaylisPosition,
+    GetPlaybackTime,
+    SetPlaybackTime,
 };
-
-static void WINAPI ShowInfoBubble(const char* text, int displayTimeMs)
-{
-    xmpfmisc->ShowBubble(text, displayTimeMs);
-}
 
 static void WINAPI DSP_About(HWND win)
 {
@@ -352,8 +323,7 @@ static void TrackStartsPlaying()
     // (Re)initialize currentTrackInfo:
     ReleaseTrackInfo(currentTrackInfo);
 
-    TrackInfo* trackInfo = new TrackInfo();
-    trackInfo->playStartTimestamp = time(NULL);
+    TRACK_INFO* trackInfo = new TRACK_INFO();
     trackInfo->title = GetTagW(TAG_TITLE);
     trackInfo->artist = GetTagW(TAG_ARTIST);
     trackInfo->album = GetTagW(TAG_ALBUM);
@@ -371,7 +341,6 @@ static void TrackStartsPlaying()
     }
 
     currentTrackInfo = trackInfo;
-    
 
     pluginWrapper->OnTrackStartsPlaying(
         currentTrackInfo->artist,
@@ -381,7 +350,7 @@ static void TrackStartsPlaying()
         currentTrackInfo->trackNumber,
         NULL);
 
-    wchar_t* wFilePath = GetStringW(currentFilePath);
+    LPCWSTR wFilePath = GetStringW(currentFilePath);
     delete[] wFilePath;
 }
 
@@ -397,7 +366,7 @@ static int GetExpectedEndOfCurrentTrackInMs(int fromPositionMs)
 }
 
 // Free an instance of TrackInfo.
-static void ReleaseTrackInfo(TrackInfo* trackInfo)
+static void ReleaseTrackInfo(TRACK_INFO* trackInfo)
 {
     if (trackInfo != NULL)
     {
@@ -411,32 +380,138 @@ static void ReleaseTrackInfo(TrackInfo* trackInfo)
 }
 
 // Get a wide string from an ansi string. (Don't forget to free it)
-static wchar_t* GetStringW(const char* string)
+static LPWSTR GetStringW(const char* string)
 {
     if (string != NULL)
     {
         size_t requiredSize = Utf2Uni(string, AUTO_NULL_TERMINATED_LENGTH, NULL, 0);
-        wchar_t* buffer = new wchar_t[requiredSize];
+        LPWSTR buffer = new wchar_t[requiredSize];
         Utf2Uni(string, AUTO_NULL_TERMINATED_LENGTH, buffer, requiredSize);
         return buffer;
     }
     else return NULL;
 }
 
+#define Uni2Utf(src,slen,dst,dlen) WideCharToMultiByte(CP_UTF8,0,src,slen,dst,dlen, NULL, NULL)
+// Get a char* string from an wide string. (Don't forget to free it)
+static char* GetString(LPCWSTR string)
+{
+    if (string != NULL)
+    {
+        size_t requiredSize = Uni2Utf(string, AUTO_NULL_TERMINATED_LENGTH, NULL, 0);
+        char* buffer = new char[requiredSize];
+        Uni2Utf(string, AUTO_NULL_TERMINATED_LENGTH, buffer, requiredSize);
+        return buffer;
+    }
+    else return NULL;
+}
+
 // Get an XMPlay tag as a wide string. (Don't forget to free it)
-static wchar_t* GetTagW(const char* tag)
+static LPWSTR GetTagW(const char* tag)
 {
     char* value = xmpfmisc->GetTag(tag);
-    wchar_t* wValue = NULL;
+    LPWSTR wValue = NULL;
     if (value != NULL)
         wValue = GetStringW(value);
     xmpfmisc->Free(value);
     return wValue;
 }
 
-static std::wstring NullCheck(wchar_t* string)
+static std::wstring NullCheck(LPCWSTR string)
 {
     return string ? std::wstring(string) : std::wstring();
+}
+
+static void WINAPI ShowInfoBubble(LPCWSTR text, int displayTimeMs)
+{
+    char* string = GetString(text);
+    xmpfmisc->ShowBubble(string, displayTimeMs);
+    delete string;
+}
+
+static void WINAPI GetPlaylist(PLAYLIST_ITEM** items, int* size)
+{
+    *size = SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
+    *items = new PLAYLIST_ITEM[*size];
+    for (int i = 0; i < *size; i++)
+    {
+        char* file = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTFILE);
+        char* title = (char*)SendMessage(xmplayWinHandle, WM_WA_IPC, i, IPC_GETPLAYLISTTITLE);
+
+        PLAYLIST_ITEM item = PLAYLIST_ITEM();
+        item.filePath = GetStringW(file);
+        item.title = GetStringW(title);
+
+        (*items)[i] = item;
+    }
+}
+
+static PLAYBACK_STATUS WINAPI GetPlaybackStatus()
+{
+    PLAYBACK_STATUS status = (PLAYBACK_STATUS)SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_ISPLAYING);
+    return status;
+}
+
+static void WINAPI GetCurrentTrackInfo(TRACK_INFO* localCurrentTrackInfo)
+{
+    localCurrentTrackInfo->title = currentTrackInfo->title;
+    localCurrentTrackInfo->album = currentTrackInfo->album;
+    localCurrentTrackInfo->artist = currentTrackInfo->artist;
+    localCurrentTrackInfo->trackNumber = currentTrackInfo->trackNumber;
+}
+
+static void WINAPI TogglePlayPause()
+{
+    //ShowWindow(xmplayWinHandle, SW_RESTORE);
+    //SetFocus(xmplayWinHandle);
+    //SetActiveWindow(xmplayWinHandle);
+    SendMessage(xmplayWinHandle, WM_KEYDOWN, 0x50, 0); // 'P' key
+    SendMessage(xmplayWinHandle, WM_KEYUP, 0x50, 0); // 'P' key
+    //ShowWindow(xmplayWinHandle, SW_SHOWNOACTIVATE);
+}
+
+// (between the range of 0 to 255)
+static double WINAPI GetVolume()
+{
+    int volume = SendMessage(xmplayWinHandle, WM_WA_IPC, -666, IPC_SETVOLUME);
+    return volume / 255.0;
+}
+
+static void WINAPI SetVolume(double volume)
+{
+    int intVolume = volume * 255;
+    if (intVolume > 255)
+        intVolume = 255;
+    if (intVolume < 0)
+        intVolume = 0;
+    SendMessage(xmplayWinHandle, WM_WA_IPC, intVolume, IPC_SETVOLUME);
+}
+
+static int WINAPI GetCurrentPlaylistPosition()
+{
+    int position = SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_GETLISTPOS);
+    return position;
+}
+
+static void WINAPI SetCurrentPlaylisPosition(int index)
+{
+    SendMessage(xmplayWinHandle, WM_WA_IPC, index, IPC_SETPLAYLISTPOS);
+    SendMessage(xmplayWinHandle, WM_USER + 26, 372/*XMP_LISTPLAY*/, 0);
+}
+
+static void WINAPI GetPlaybackTime(int* currentTimeMs, int* totalTimeMs)
+{
+    *currentTimeMs = SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_GETOUTPUTTIME);
+    //int totalSECONDS = SendMessage(xmplayWinHandle, WM_WA_IPC, 1, IPC_GETOUTPUTTIME);
+    *totalTimeMs = currentTrackDurationMs;
+}
+
+static void WINAPI SetPlaybackTime(int currentTimeMs)
+{
+    // We use the timeout version, because, I'm not sure why, but sometimes this call seems to deadlock XMPlay.
+    // For example, this occurs when this method is called from TrackStartsPlaying and the playback time is still 0.
+    // Setting a timeout resolves the problem...
+    SendMessageTimeout(xmplayWinHandle, WM_WA_IPC, currentTimeMs, IPC_JUMPTOTIME, SMTO_ABORTIFHUNG, 300 /*ms*/, NULL);
 }
 
 // Get the plugin's XMPDSP interface.

@@ -1,4 +1,4 @@
-// XMPlay plugin functions header
+﻿// XMPlay plugin functions header
 // new plugins can be submitted to plugins@xmplay.com
 
 #pragma once
@@ -182,12 +182,6 @@ typedef struct { // playback status functions
 //** it is dealing with some lame Windows Explorer issues (hard to believe that!).
 //*/
 //SendMessage(xmplayWinHandle, WM_WA_IPC, 0, IPC_DELETE);
-//
-///* SendMessage(hwnd_winamp,WM_WA_IPC,0,IPC_STARTPLAY);
-//** Sending this will start playback and is almost the same as hitting the play button.
-//** The IPC_STARTPLAY_INT version is used internally and you should not need to use it
-//** since it won't be any fun.
-//*/
 //
 ///* SendMessage(hwnd_winamp,WM_WA_IPC,0,IPC_STARTPLAY);
 //** Sending this will start playback and is almost the same as hitting the play button.

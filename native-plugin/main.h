@@ -17,18 +17,6 @@ typedef struct
     char sessionKey[32];
 } ScrobblerConfig;
 
-// Gather information required to scrobble a track.
-// All the text fields are expected to be UTF-16.
-typedef struct
-{
-    time_t playStartTimestamp;
-    wchar_t* title;
-    wchar_t* artist;
-    wchar_t* album;
-    wchar_t* trackNumber;
-    wchar_t* mbid;
-} TrackInfo;
-
 /* DSP functions: */
 
 static void WINAPI DSP_About(HWND win);
@@ -48,11 +36,23 @@ static void WINAPI DSP_NewTitle(void* inst, const char* title);
 
 static void CompleteCurrentTrack();
 static void TrackStartsPlaying();
-static void ReleaseTrackInfo(TrackInfo* trackInfo);
+static void ReleaseTrackInfo(TRACK_INFO* trackInfo);
 static int GetExpectedEndOfCurrentTrackInMs(int fromPositionMs);
-static wchar_t* GetStringW(const char* string);
-static wchar_t* GetTagW(const char* tag);
-static std::wstring NullCheck(wchar_t* string);
-static void WINAPI ShowInfoBubble(const char* text, int displayTimeMs);
+static LPWSTR GetStringW(const char* string);
+static LPWSTR GetTagW(const char* tag);
+static std::wstring NullCheck(LPCWSTR* string);
 
 static BOOL CALLBACK AboutDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+/* Exported functions: */
+static void WINAPI ShowInfoBubble(LPCWSTR text, int displayTimeMs);
+static void WINAPI GetPlaylist(PLAYLIST_ITEM** items, int* size);
+static PLAYBACK_STATUS WINAPI GetPlaybackStatus();
+static void WINAPI GetCurrentTrackInfo(TRACK_INFO* currentTrackInfo);
+static void WINAPI TogglePlayPause();
+static double WINAPI GetVolume();
+static void WINAPI SetVolume(double volume);
+static int WINAPI GetCurrentPlaylistPosition();
+static void WINAPI SetCurrentPlaylisPosition(int index);
+static void WINAPI GetPlaybackTime(int* currentTimeMs, int* totalTimeMs);
+static void WINAPI SetPlaybackTime(int currentTimeMs);
