@@ -26,7 +26,7 @@
 #include "xmpdsp.h"
 #include "xmpfunc.h"
 
-#include "SharpScrobblerWrapper.h"
+#include "SharpRemoteWrapper.h"
 #include "main.h"
 
 // Magic number for MultiByteToWideChar()
@@ -41,7 +41,7 @@ static XMPFUNC_STATUS* xmpfstatus;
 
 static ScrobblerConfig pluginConfig;
 
-static SharpScrobblerWrapper* pluginWrapper = NULL;
+static SharpRemoteWrapper* pluginWrapper = NULL;
 
 static const char* currentFilePath = NULL;
 
@@ -148,10 +148,10 @@ static const char* WINAPI DSP_GetDescription(void* inst)
 
 static void* WINAPI DSP_New()
 {
-    pluginWrapper = new SharpScrobblerWrapper();
-    SharpScrobblerWrapper::InitializeExports(&exports);
-    SharpScrobblerWrapper::LogInfo("****************************************************************************************************");
-    SharpScrobblerWrapper::LogInfo(PLUGIN_FRIENDLY_NAME " " PLUGIN_VERSION_STRING " started!");
+    pluginWrapper = new SharpRemoteWrapper();
+    SharpRemoteWrapper::InitializeExports(&exports);
+    SharpRemoteWrapper::LogInfo("****************************************************************************************************");
+    SharpRemoteWrapper::LogInfo(PLUGIN_FRIENDLY_NAME " " PLUGIN_VERSION_STRING " started!");
 
     if (!xmplayWinHandle)
         xmplayWinHandle = xmpfmisc->GetWindow();

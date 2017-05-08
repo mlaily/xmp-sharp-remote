@@ -32,6 +32,7 @@ namespace xmp_sharp_remote_managed
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
     public delegate void GetPlaylistHandler(out IntPtr items, out int size);
+
     [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
     public delegate void FreePlaylistHandler(IntPtr items, int size);
 
@@ -87,7 +88,7 @@ namespace xmp_sharp_remote_managed
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public struct TrackInfo
+    public class TrackInfo
     {
         public string title;
         public string artist;
@@ -96,25 +97,30 @@ namespace xmp_sharp_remote_managed
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public struct PlaylistItem
+    public class PlaylistItem
     {
         public string title;
         public string filePath;
     }
 
-    public static class Util
+    public static class NativeWrapper
     {
-        public static PluginExports _PluginExports;
+        private static PluginExports _pluginExports;
+
         public static void InitializeExports(PluginExports exports)
         {
-            _PluginExports = exports;
+            _pluginExports = exports;
         }
+
+        public static void ShowInfoBubble(string text, TimeSpan? displayTime = null)
+            => _pluginExports.ShowBubbleInfo?.Invoke(text, displayTime == null ? 0 : (int)displayTime.Value.TotalMilliseconds);
 
         public static PlaylistItem[] GetPlaylist()
         {
-            // Marshaling reference: https://msdn.microsoft.com/en-us/library/eshywdt7(v=vs.110).aspx
-            // and https://msdn.microsoft.com/en-us/library/as6wyhwt(v=vs.100).aspx
-            _PluginExports.GetPlaylist(out var itemsPtr, out int size);
+            // Marshaling reference:
+            // managed: https://msdn.microsoft.com/en-us/library/eshywdt7(v=vs.110).aspx
+            // native: https://msdn.microsoft.com/en-us/library/as6wyhwt(v=vs.100).aspx
+            _pluginExports.GetPlaylist(out var itemsPtr, out int size);
             PlaylistItem[] playlist = new PlaylistItem[size];
             IntPtr current = itemsPtr;
             for (int i = 0; i < size; i++)
@@ -122,11 +128,35 @@ namespace xmp_sharp_remote_managed
                 playlist[i] = Marshal.PtrToStructure<PlaylistItem>(current);
                 current = (IntPtr)((long)current + Marshal.SizeOf<PlaylistItem>());
             }
-            _PluginExports.FreePlaylist(itemsPtr, size);
+            _pluginExports.FreePlaylist(itemsPtr, size);
             return playlist;
         }
 
-        public static void ShowInfoBubble(string text, TimeSpan? displayTime = null)
-            => _PluginExports.ShowBubbleInfo?.Invoke(text, displayTime == null ? 0 : (int)displayTime.Value.TotalMilliseconds);
+        public static PlaybackStatus GetPlaybackStatus() => _pluginExports.GetPlaybackStatus();
+
+        public static TrackInfo GetCurrentTrackInfo()
+        {
+            _pluginExports.GetCurrentTrackInfo(out var currentTrackInfo);
+            return currentTrackInfo;
+        }
+
+        public static void TogglePlayPause() => _pluginExports.TogglePlayPause();
+
+        public static double GetVolume() => _pluginExports.GetVolume();
+
+        public static void SetVolume(double volume) => _pluginExports.SetVolume(volume);
+
+        public static void GetCurrentPlaylistPosition() => _pluginExports.GetCurrentPlaylistPosition();
+
+        public static void SetCurrentPlaylisPosition(int index) => _pluginExports.SetCurrentPlaylisPosition(index);
+
+        public static void GetPlaybackTime(out TimeSpan currentTime, out TimeSpan totalTime)
+        {
+            _pluginExports.GetPlaybackTime(out int currentTimeMs, out int totalTimeMs);
+            currentTime = TimeSpan.FromMilliseconds(currentTimeMs);
+            totalTime = TimeSpan.FromMilliseconds(totalTimeMs);
+        }
+
+        public static void SetPlaybackTime(TimeSpan time) => _pluginExports.SetPlaybackTime((int)time.TotalMilliseconds);
     }
 }

@@ -13,24 +13,24 @@ using namespace xmp_sharp_remote_managed;
 // Create a managed proxy function for a native function pointer
 // to allow the C# part to call a native function:
 
-class SharpScrobblerAdapter
+class SharpRemoteAdapter
 {
 public:
-    msclr::auto_gcroot<SharpScrobbler^> Instance;
-    SharpScrobblerAdapter() : Instance(gcnew SharpScrobbler()) {}
+    msclr::auto_gcroot<SharpRemote^> Instance;
+    SharpRemoteAdapter() : Instance(gcnew SharpRemote()) {}
 };
 
-class __declspec(dllexport) SharpScrobblerWrapper
+class __declspec(dllexport) SharpRemoteWrapper
 {
 private:
-    SharpScrobblerAdapter* _adapter;
+    SharpRemoteAdapter* _adapter;
 
 public:
-    SharpScrobblerWrapper()
+    SharpRemoteWrapper()
     {
-        _adapter = new SharpScrobblerAdapter();
+        _adapter = new SharpRemoteAdapter();
     }
-    ~SharpScrobblerWrapper()
+    ~SharpRemoteWrapper()
     {
         delete _adapter;
     }
@@ -63,7 +63,7 @@ public:
         managedExports->SetPlaybackTime =
             Marshal::GetDelegateForFunctionPointer<SetPlaybackTimeHandler^>((IntPtr)pluginExports->SetPlaybackTime);
 
-        Util::InitializeExports(managedExports);
+        NativeWrapper::InitializeExports(managedExports);
     }
 
     static void LogInfo(const char* message)

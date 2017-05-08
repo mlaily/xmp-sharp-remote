@@ -29,7 +29,7 @@ using System.Windows.Forms;
 
 namespace xmp_sharp_remote_managed
 {
-    public class SharpScrobbler
+    public class SharpRemote
     {
         //private const string NullSessionKeyErrorMessage = "Please authenticate with Last.fm!";
         private static readonly TimeSpan DefaultErrorBubbleDisplayTime = TimeSpan.FromSeconds(5);
@@ -40,7 +40,7 @@ namespace xmp_sharp_remote_managed
 
         //public string SessionKey { get; set; }
 
-        public SharpScrobbler()
+        public SharpRemote()
         {
             //cache = new Cache();
         }
@@ -58,13 +58,13 @@ namespace xmp_sharp_remote_managed
 
         public async void OnTrackStartsPlaying(string artist, string track, string album, int durationMs, string trackNumber, string mbid)
         {
-            var playlist = Util.GetPlaylist();
+            var playlist = NativeWrapper.GetPlaylist();
 
             //   await Task.Delay(1000);
             //  Util._PluginExports.TogglePlayPause();
 
-            var status = Util._PluginExports.GetPlaybackStatus();
-              Util.ShowInfoBubble($"{status}♥");
+            //var status = NativeWrapper._pluginExports.GetPlaybackStatus();
+            //  NativeWrapper.ShowInfoBubble($"{status}♥");
             ////  var playlist = Util._PluginExports.GetPlaylist();
             //  PlaylistItem[] item;
             //  Util._PluginExports.GetPlaylist(out item, out int size);
@@ -80,7 +80,7 @@ namespace xmp_sharp_remote_managed
             //int playlistIndex = Util._PluginExports.GetCurrentPlaylistPosition();
             // Util._PluginExports.SetCurrentPlaylisPosition(++playlistIndex);
 
-            Util._PluginExports.SetPlaybackTime(10000);
+         //   NativeWrapper._pluginExports.SetPlaybackTime(10000);
            // Util._PluginExports.GetPlaybackTime(out int current, out int total);
 
             //NowPlaying nowPlaying = CreateScrobble(artist, track, album, durationMs, trackNumber, mbid);
@@ -252,11 +252,11 @@ namespace xmp_sharp_remote_managed
 
         private static void ShowErrorBubble(string message)
         {
-            Util.ShowInfoBubble($"Scrobbler Error! {message}", DefaultErrorBubbleDisplayTime);
+            NativeWrapper.ShowInfoBubble($"Scrobbler Error! {message}", DefaultErrorBubbleDisplayTime);
         }
         private static void ShowErrorBubble(Exception ex)
         {
-            Util.ShowInfoBubble($"Scrobbler Error! {ex?.GetType()?.Name + " - " ?? ""}{ex.Message}", DefaultErrorBubbleDisplayTime);
+            NativeWrapper.ShowInfoBubble($"Scrobbler Error! {ex?.GetType()?.Name + " - " ?? ""}{ex.Message}", DefaultErrorBubbleDisplayTime);
         }
 
         //private static Scrobble CreateScrobble(string artist, string track, string album, int durationMs, string trackNumber, string mbid, long utcUnixTimestamp = 0)

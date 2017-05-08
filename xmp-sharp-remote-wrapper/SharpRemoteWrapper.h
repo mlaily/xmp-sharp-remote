@@ -1,15 +1,15 @@
 ﻿#include "Definitions.h"
 
-class SharpScrobblerAdapter;
+class SharpRemoteAdapter;
 
-class SharpScrobblerWrapper
+class SharpRemoteWrapper
 {
 private:
-    SharpScrobblerAdapter* _adapter;
+    SharpRemoteAdapter* _adapter;
 
 public:
-    SharpScrobblerWrapper();
-    ~SharpScrobblerWrapper();
+    SharpRemoteWrapper();
+    ~SharpRemoteWrapper();
 
     static void InitializeExports(PLUGIN_EXPORTS* pluginExports);
 
