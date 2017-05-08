@@ -36,17 +36,17 @@ static void WINAPI DSP_NewTitle(void* inst, const char* title);
 
 static void CompleteCurrentTrack();
 static void TrackStartsPlaying();
-static void ReleaseTrackInfo(TRACK_INFO* trackInfo);
+static void FreeTrackInfo(TRACK_INFO* trackInfo);
 static int GetExpectedEndOfCurrentTrackInMs(int fromPositionMs);
 static LPWSTR GetStringW(const char* string);
 static LPWSTR GetTagW(const char* tag);
-static std::wstring NullCheck(LPCWSTR* string);
 
 static BOOL CALLBACK AboutDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /* Exported functions: */
 static void WINAPI ShowInfoBubble(LPCWSTR text, int displayTimeMs);
 static void WINAPI GetPlaylist(PLAYLIST_ITEM** items, int* size);
+static void WINAPI FreePlaylist(PLAYLIST_ITEM* items, int size);
 static PLAYBACK_STATUS WINAPI GetPlaybackStatus();
 static void WINAPI GetCurrentTrackInfo(TRACK_INFO* currentTrackInfo);
 static void WINAPI TogglePlayPause();

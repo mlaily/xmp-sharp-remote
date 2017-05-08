@@ -42,6 +42,8 @@ public:
             Marshal::GetDelegateForFunctionPointer<ShowInfoBubbleHandler^>((IntPtr)pluginExports->ShowBubbleInfo);
         managedExports->GetPlaylist =
             Marshal::GetDelegateForFunctionPointer<GetPlaylistHandler^>((IntPtr)pluginExports->GetPlaylist);
+        managedExports->FreePlaylist =
+            Marshal::GetDelegateForFunctionPointer<FreePlaylistHandler^>((IntPtr)pluginExports->FreePlaylist);
         managedExports->GetPlaybackStatus =
             Marshal::GetDelegateForFunctionPointer<GetPlaybackStatusHandler^>((IntPtr)pluginExports->GetPlaybackStatus);
         managedExports->GetCurrentTrackInfo =

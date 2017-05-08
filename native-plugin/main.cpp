@@ -89,6 +89,7 @@ static PLUGIN_EXPORTS exports =
 {
     ShowInfoBubble,
     GetPlaylist,
+    FreePlaylist,
     GetPlaybackStatus,
     GetCurrentTrackInfo,
     TogglePlayPause,
@@ -160,7 +161,7 @@ static void* WINAPI DSP_New()
 
 static void WINAPI DSP_Free(void* inst)
 {
-    ReleaseTrackInfo(currentTrackInfo);
+    FreeTrackInfo(currentTrackInfo);
     delete pluginWrapper;
 }
 
@@ -321,7 +322,7 @@ static void TrackStartsPlaying()
     callOnTrackCompletesOnEnd = false;
 
     // (Re)initialize currentTrackInfo:
-    ReleaseTrackInfo(currentTrackInfo);
+    FreeTrackInfo(currentTrackInfo);
 
     TRACK_INFO* trackInfo = new TRACK_INFO();
     trackInfo->title = GetTagW(TAG_TITLE);
@@ -366,7 +367,7 @@ static int GetExpectedEndOfCurrentTrackInMs(int fromPositionMs)
 }
 
 // Free an instance of TrackInfo.
-static void ReleaseTrackInfo(TRACK_INFO* trackInfo)
+static void FreeTrackInfo(TRACK_INFO* trackInfo)
 {
     if (trackInfo != NULL)
     {
@@ -444,6 +445,17 @@ static void WINAPI GetPlaylist(PLAYLIST_ITEM** items, int* size)
 
         (*items)[i] = item;
     }
+}
+
+static void WINAPI FreePlaylist(PLAYLIST_ITEM* items, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        PLAYLIST_ITEM item = items[i];
+        delete[] item.filePath;
+        delete[] item.title;
+    }
+    delete[] items;
 }
 
 static PLAYBACK_STATUS WINAPI GetPlaybackStatus()

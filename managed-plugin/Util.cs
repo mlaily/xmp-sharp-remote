@@ -31,7 +31,9 @@ namespace xmp_sharp_remote_managed
     public delegate void ShowInfoBubbleHandler(string text, int displayTimeMs);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-    public delegate void GetPlaylistHandler([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] out PlaylistItem[] items, out int size);
+    public delegate void GetPlaylistHandler(out IntPtr items, out int size);
+    [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+    public delegate void FreePlaylistHandler(IntPtr items, int size);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
     public delegate PlaybackStatus GetPlaybackStatusHandler();
@@ -72,6 +74,7 @@ namespace xmp_sharp_remote_managed
     {
         public ShowInfoBubbleHandler ShowBubbleInfo;
         public GetPlaylistHandler GetPlaylist;
+        public FreePlaylistHandler FreePlaylist;
         public GetPlaybackStatusHandler GetPlaybackStatus;
         public GetCurrentTrackInfoHandler GetCurrentTrackInfo;
         public TogglePlayPauseHandler TogglePlayPause;
@@ -106,6 +109,23 @@ namespace xmp_sharp_remote_managed
         {
             _PluginExports = exports;
         }
+
+        public static PlaylistItem[] GetPlaylist()
+        {
+            // Marshaling reference: https://msdn.microsoft.com/en-us/library/eshywdt7(v=vs.110).aspx
+            // and https://msdn.microsoft.com/en-us/library/as6wyhwt(v=vs.100).aspx
+            _PluginExports.GetPlaylist(out var itemsPtr, out int size);
+            PlaylistItem[] playlist = new PlaylistItem[size];
+            IntPtr current = itemsPtr;
+            for (int i = 0; i < size; i++)
+            {
+                playlist[i] = Marshal.PtrToStructure<PlaylistItem>(current);
+                current = (IntPtr)((long)current + Marshal.SizeOf<PlaylistItem>());
+            }
+            _PluginExports.FreePlaylist(itemsPtr, size);
+            return playlist;
+        }
+
         public static void ShowInfoBubble(string text, TimeSpan? displayTime = null)
             => _PluginExports.ShowBubbleInfo?.Invoke(text, displayTime == null ? 0 : (int)displayTime.Value.TotalMilliseconds);
     }

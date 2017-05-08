@@ -27,6 +27,7 @@ typedef struct
 {
     void(WINAPI *ShowBubbleInfo)(LPCWSTR text, int displayTimeMs);
     void(WINAPI *GetPlaylist)(PLAYLIST_ITEM** items, int* size);
+    void(WINAPI *FreePlaylist)(PLAYLIST_ITEM* items, int size);
     PLAYBACK_STATUS(WINAPI *GetPlaybackStatus)();
     void(WINAPI *GetCurrentTrackInfo)(TRACK_INFO* currentTrackInfo);
     void(WINAPI *TogglePlayPause)();

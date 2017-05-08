@@ -58,10 +58,12 @@ namespace xmp_sharp_remote_managed
 
         public async void OnTrackStartsPlaying(string artist, string track, string album, int durationMs, string trackNumber, string mbid)
         {
-           //   await Task.Delay(1000);
+            var playlist = Util.GetPlaylist();
+
+            //   await Task.Delay(1000);
             //  Util._PluginExports.TogglePlayPause();
 
-              var status = Util._PluginExports.GetPlaybackStatus();
+            var status = Util._PluginExports.GetPlaybackStatus();
               Util.ShowInfoBubble($"{status}♥");
             ////  var playlist = Util._PluginExports.GetPlaylist();
             //  PlaylistItem[] item;
