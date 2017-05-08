@@ -56,7 +56,7 @@ namespace xmp_sharp_remote_managed
         //    return SessionKey;
         //}
 
-        public async void OnTrackStartsPlaying(string artist, string track, string album, int durationMs, string trackNumber, string mbid)
+        public async void OnTrackStartsPlaying(TrackInfo trackInfo)
         {
             var playlist = NativeWrapper.GetPlaylist();
 

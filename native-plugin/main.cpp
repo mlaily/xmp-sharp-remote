@@ -343,13 +343,7 @@ static void TrackStartsPlaying()
 
     currentTrackInfo = trackInfo;
 
-    pluginWrapper->OnTrackStartsPlaying(
-        currentTrackInfo->artist,
-        currentTrackInfo->title,
-        currentTrackInfo->album,
-        currentTrackDurationMs,
-        currentTrackInfo->trackNumber,
-        NULL);
+    pluginWrapper->OnTrackStartsPlaying(currentTrackInfo);
 
     LPCWSTR wFilePath = GetStringW(currentFilePath);
     delete[] wFilePath;
