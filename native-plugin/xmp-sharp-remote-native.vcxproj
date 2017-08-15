@@ -101,7 +101,7 @@ xcopy /RY "$(SolutionDir)\xmp-sharp-remote-wrapper\bin\$(Configuration)\xmp-shar
     <PostBuildEvent>
       <Command>xcopy /RY "$(SolutionDir)xmplay.exe" "$(TargetDir)"
 mkdir "$(SolutionDir)\Plugin-Release\"
-move /Y "$(TargetPath)" "$(SolutionDir)\Plugin-Release\xmp-sharp-remote.dll"</Command>
+xcopy /RY "$(TargetPath)" "$(SolutionDir)\Plugin-Release\xmp-sharp-remote.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
