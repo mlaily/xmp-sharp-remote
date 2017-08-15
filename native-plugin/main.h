@@ -3,11 +3,11 @@
 #include "time.h"
 
 #define PLUGIN_FRIENDLY_NAME    "XMPlay Sharp Remote"
-#define PLUGIN_VERSION          0,4,0,0
-#define PLUGIN_VERSION_STRING   "0.4.0.0"
+#define PLUGIN_VERSION          0,1,0,0
+#define PLUGIN_VERSION_STRING   "0.1.0.0"
 #define IDD_ABOUT               1001
 #define IDC_ABOUT_DOTNET_LINK   1002
-#define ABOUT_DIALOG_TEXT PLUGIN_FRIENDLY_NAME "\n\nA Last.fm scrobbling plugin for XMPlay.\n\nVersion " PLUGIN_VERSION_STRING \
+#define ABOUT_DIALOG_TEXT PLUGIN_FRIENDLY_NAME "\n\nA remote plugin for XMPlay.\n\nVersion " PLUGIN_VERSION_STRING \
 " - 2017\n\nBy Melvyn Laïly\n\nThis plugin requires the .Net Framework 4.6 to be installed to run.\n\n<a>Download .Net 4.6</a>"
 
 
