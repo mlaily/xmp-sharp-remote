@@ -460,10 +460,13 @@ static PLAYBACK_STATUS WINAPI GetPlaybackStatus()
 
 static void WINAPI GetCurrentTrackInfo(TRACK_INFO* localCurrentTrackInfo)
 {
-    localCurrentTrackInfo->title = currentTrackInfo->title;
-    localCurrentTrackInfo->album = currentTrackInfo->album;
-    localCurrentTrackInfo->artist = currentTrackInfo->artist;
-    localCurrentTrackInfo->trackNumber = currentTrackInfo->trackNumber;
+    if (currentTrackInfo != NULL)
+    {
+        localCurrentTrackInfo->title = currentTrackInfo->title;
+        localCurrentTrackInfo->artist = currentTrackInfo->artist;
+        localCurrentTrackInfo->album = currentTrackInfo->album;
+        localCurrentTrackInfo->trackNumber = currentTrackInfo->trackNumber;
+    }
 }
 
 static void WINAPI TogglePlayPause()

@@ -91,7 +91,7 @@ public:
 
     void OnTrackStartsPlaying(const TRACK_INFO* trackInfo)
     {
-        _adapter->Instance->OnTrackStartsPlaying(Marshal::PtrToStructure<TrackInfo^>(IntPtr((void*)trackInfo)));
+        _adapter->Instance->OnTrackStartsPlaying(Marshal::PtrToStructure<TrackInfo>(IntPtr((void*)trackInfo)));
     }
 
     void OnTrackCompletes()

@@ -88,7 +88,7 @@ namespace xmp_sharp_remote_managed
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public class TrackInfo
+    public struct TrackInfo
     {
         public string title;
         public string artist;
@@ -97,7 +97,7 @@ namespace xmp_sharp_remote_managed
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public class PlaylistItem
+    public struct PlaylistItem
     {
         public string title;
         public string filePath;
@@ -146,7 +146,7 @@ namespace xmp_sharp_remote_managed
 
         public static void SetVolume(double volume) => _pluginExports.SetVolume(volume);
 
-        public static void GetCurrentPlaylistPosition() => _pluginExports.GetCurrentPlaylistPosition();
+        public static int GetCurrentPlaylistPosition() => _pluginExports.GetCurrentPlaylistPosition();
 
         public static void SetCurrentPlaylisPosition(int index) => _pluginExports.SetCurrentPlaylisPosition(index);
 
