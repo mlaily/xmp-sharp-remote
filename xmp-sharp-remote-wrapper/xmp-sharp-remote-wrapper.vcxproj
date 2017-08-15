@@ -110,7 +110,7 @@ xcopy /RY "$(TargetDir)xmp-sharp-remote-wrapper.lib" "$(SolutionDir)\native-plug
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\managed-plugin\xmp-sharp-remote-managed.csproj">
-      <Project>{10238d4e-b185-4cc6-8fb5-d0bc7a19d848}</Project>
+      <Project>{10238d4e-b185-4cc6-8fb5-d0bc7a19d849}</Project>
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

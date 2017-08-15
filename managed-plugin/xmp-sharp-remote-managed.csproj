@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{10238D4E-B185-4CC6-8FB5-D0BC7A19D848}</ProjectGuid>
+    <ProjectGuid>{10238D4E-B185-4CC6-8FB5-D0BC7A19D849}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>xmp_sharp_remote_managed</RootNamespace>
