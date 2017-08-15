@@ -20,9 +20,17 @@ namespace xmp_sharp_remote_managed
         private HttpListener _listener;
         private Dictionary<Func<HttpListenerContext, bool>, Action<HttpListenerContext>> _routesMap = new Dictionary<Func<HttpListenerContext, bool>, Action<HttpListenerContext>>();
         private const int ActionResponseDelay = 100;
+        private const string _password = "password";
 
         public Server()
         {
+            // Unauthorized
+            // (Determine whether the authentication is successful as a side effect of evaluating this route)
+            _routesMap.Add(x => !IsAuthenticationValid(x), x =>
+            {
+                x.Response.StatusCode = (int)HttpStatusCode.Unauthorized; WriteResponse(x.Response, "Login required");
+            });
+
             // GET
             _routesMap.Add(x => Method(x, "GET") && Path(x) == "requests/track", x =>
             {
@@ -111,6 +119,8 @@ namespace xmp_sharp_remote_managed
         private static string Path(HttpListenerContext context) => context.Request.Url.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped).TrimEnd(new[] { '/' });
         private static bool Method(HttpListenerContext context, string method) => context.Request.HttpMethod == method;
 
+        private static bool IsAuthenticationValid(HttpListenerContext context) => (context.User.Identity as HttpListenerBasicIdentity)?.Password == _password;
+
         private static string FormatPlaylist(IEnumerable<PlaylistItem> playlist, int currentPosition)
         {
             var itemTemplate = Encoding.UTF8.GetString(Resources.playlistItemHtmlTemplate);
@@ -177,6 +187,7 @@ namespace xmp_sharp_remote_managed
                 {
                     _listener = new HttpListener() { IgnoreWriteExceptions = true };
                     _listener.Prefixes.Add(url);
+                    _listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     _listener.Start();
                     retry = false;
                 }
