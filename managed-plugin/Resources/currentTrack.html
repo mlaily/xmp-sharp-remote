@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Current track: {title} - {artist}</title>
+</head>
+<body>
+
+	<a href="/requests">Home</a>
+	<br/>
+
+	<h1>{title}</h1>
+	<h2>Artist: {artist}</h2>
+	<h2>Album: {album}</h2>
+	<h3>Track number: {trackNumber}</h3>
+	
+	<h3>({PlaybackStatus})</h3>
+	
+	<form method="post" action="/requests/togglePlayPause" class="inline">
+		<button type="submit">Play/pause</button>
+	</form>
+	
+	<form method="post" action="/requests/volume" class="inline">
+		<h3>Volume:</h3><input type="text" name="volume" value="{Volume}">/100
+		<button type="submit">Change volume</button>
+	</form>
+	<h3>Playback time: {PlaybackTime}</h3>
+	<form method="post" action="/requests/track/time" class="inline">
+		<input type="hidden" name="skipBackward">
+		<button type="submit">Skip Backward 5s</button>
+	</form>
+	<form method="post" action="/requests/track/time" class="inline">
+	<input type="hidden" name="skipForward">
+		<button type="submit">Skip Forward 5s</button>
+	</form>
+	
+
+</body>
+</html>

@@ -33,11 +33,14 @@ namespace xmp_sharp_remote_managed
     {
         private static readonly TimeSpan DefaultErrorBubbleDisplayTime = TimeSpan.FromSeconds(5);
 
+        private Server _server;
+
         //public string SessionKey { get; set; }
 
         public SharpRemote()
         {
-            //cache = new Cache();
+            _server = new Server();
+            _server.Start();
         }
 
         //public string AskUserForNewAuthorizedSessionKey(IntPtr ownerWindowHandle)
@@ -53,7 +56,8 @@ namespace xmp_sharp_remote_managed
 
         public void OnTrackStartsPlaying(TrackInfo trackInfo)
         {
-            var playlist = NativeWrapper.GetPlaylist();
+            // var current = NativeWrapper.GetCurrentTrackInfo();
+            //var playlist = NativeWrapper.GetPlaylist();
         }
 
         public void OnTrackCompletes()
